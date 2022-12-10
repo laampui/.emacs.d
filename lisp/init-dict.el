@@ -35,20 +35,20 @@
 
 ;; A multi dictionaries interface
 (use-package fanyi
-  :bind (("C-c d f" . fanyi-dwim)
-         ("C-c d d" . fanyi-dwim2)
-         ("C-c d h" . fanyi-from-history)))
+  :bind (("C-c D f" . fanyi-dwim)
+         ("C-c D d" . fanyi-dwim2)
+         ("C-c D h" . fanyi-from-history)))
 
 (when emacs/>=28p
   (use-package go-translate
     :bind (("C-c g"   . gt-do-translate)
            ("C-c G"   . gt-do-translate-prompt)
            ("C-c u"   . gt-do-text-utility)
-           ("C-c d g" . gt-do-translate)
-           ("C-c d G" . gt-do-translate-prompt)
-           ("C-c d p" . gt-do-speak)
-           ("C-c d s" . gt-do-setup)
-           ("C-c d u" . gt-do-text-utility))
+           ("C-c D g" . gt-do-translate)
+           ("C-c D G" . gt-do-translate-prompt)
+           ("C-c D p" . gt-do-speak)
+           ("C-c D s" . gt-do-setup)
+           ("C-c D u" . gt-do-text-utility))
     :init
     (setq gt-langs '(en zh)
           gt-buffer-render-follow-p t
@@ -119,8 +119,8 @@
 ;; OSX dictionary
 (when sys/macp
   (use-package osx-dictionary
-    :bind (("C-c d i" . osx-dictionary-search-input)
-           ("C-c d x" . osx-dictionary-search-pointer))))
+    :bind (("C-c D i" . osx-dictionary-search-input)
+           ("C-c D x" . osx-dictionary-search-pointer))))
 
 (provide 'init-dict)
 

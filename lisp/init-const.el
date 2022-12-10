@@ -31,7 +31,7 @@
 ;;; Code:
 
 (defconst centaur-homepage
-  "https://github.com/seagle0128/.emacs.d"
+  "https://github.com/laampui/.emacs.d"
   "The Github page of Centaur Emacs.")
 
 (defconst centaur-custom-example-file
@@ -106,6 +106,22 @@ Loaded by `org-babel-load-file'.")
 (defconst emacs/>=30p
   (>= emacs-major-version 30)
   "Emacs is 30 or above.")
+
+(defconst python-p
+  (or (executable-find "python3")
+      (and (executable-find "python")
+           (> (length (shell-command-to-string "python --version | grep 'Python 3'")) 0)))
+  "Do we have python3?")
+
+(defconst pip-p
+  (or (executable-find "pip3")
+      (and (executable-find "pip")
+           (> (length (shell-command-to-string "pip --version | grep 'python 3'")) 0)))
+  "Do we have pip3?")
+
+(defconst eaf-env-p
+  (and (display-graphic-p) python-p pip-p)
+  "Do we have EAF environment setup?")
 
 (provide 'init-const)
 
