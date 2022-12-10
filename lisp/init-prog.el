@@ -100,6 +100,7 @@
 
 ;; Code styles
 (use-package editorconfig
+  :disabled
   :diminish
   :hook (after-init . editorconfig-mode))
 

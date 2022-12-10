@@ -111,13 +111,13 @@
 
 ;; Jump to things in Emacs tree-style
 (use-package avy
-  :bind (("C-:"   . avy-goto-char)
+  :bind (("C-:"   . avy-goto-char-timer)
          ("C-'"   . avy-goto-char-2)
          ("M-g l" . avy-goto-line)
          ("M-g w" . avy-goto-word-1)
          ("M-g e" . avy-goto-word-0))
   :hook (after-init . avy-setup-default)
-  :config (setq avy-all-windows nil
+  :config (setq avy-all-windows t
                 avy-all-windows-alt t
                 avy-background t
                 avy-style 'pre))
@@ -161,7 +161,7 @@
   ;; Disable in some modes
   (dolist (mode '(gitconfig-mode
                   asm-mode web-mode html-mode
-                  css-mode css-ts-mode
+                  css-mode css-ts-mode js2-mode
                   go-mode go-ts-mode
                   python-ts-mode yaml-ts-mode
                   scala-mode
@@ -175,7 +175,7 @@
   ;; Be slightly less aggressive in C/C++/C#/Java/Go/Swift
   (add-to-list 'aggressive-indent-dont-indent-if
                '(and (derived-mode-p 'c-mode 'c++-mode 'csharp-mode
-                                     'java-mode 'go-mode 'swift-mode)
+                                     'java-mode 'go-mode 'swift-mode 'web-mode)
                      (null (string-match "\\([;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
                                          (thing-at-point 'line))))))
 
@@ -209,20 +209,77 @@
 ;; A comprehensive visual interface to diff & patch
 (use-package ediff
   :ensure nil
+  :init
+  (setq-default ediff-highlight-all-diffs t)
+
+  (defun ediff-copy-both-to-C ()
+    "Accept both A and B diffs in an ediff session."
+    (interactive)
+    (ediff-copy-diff ediff-current-difference nil 'C nil
+                     (concat
+                      (ediff-get-region-contents ediff-current-difference 'A ediff-control-buffer)
+                      (ediff-get-region-contents ediff-current-difference 'B ediff-control-buffer))))
+
+  (defun evil-collection-ediff-first-difference ()
+    "Jump to first difference."
+    (interactive)
+    (ediff-jump-to-difference 1))
+
+  (defun add-d-to-ediff-mode-map ()
+    "Add ’d’ to accept both A and B diffs in ediff session."
+    (define-key ediff-mode-map "d" 'ediff-copy-both-to-C)
+    (define-key ediff-mode-map "g" 'ediff-update-diffs))
+
   :hook(;; show org ediffs unfolded
         (ediff-prepare-buffer . outline-show-all)
         ;; restore window layout when done
-        (ediff-quit . winner-undo))
-  :config
-  (setq ediff-window-setup-function 'ediff-setup-windows-plain
-        ediff-split-window-function 'split-window-horizontally
-        ediff-merge-split-window-function 'split-window-horizontally))
+        (ediff-quit . winner-undo)
+        ;; jump to first difference on startup
+        (ediff-startup . ediff-next-difference)
+        (ediff-startup . (lambda () (dimmer-mode -1)))
+        (ediff-quit . (lambda () (dimmer-mode 1)))
+        (ediff-quit-merge . (lambda () (dimmer-mode 1)))
+        (ediff-keymap-setup . add-d-to-ediff-mode-map))
+  ;; :config
+  ;; (defvar ctl-period-equals-map)
+  ;; (define-prefix-command 'ctl-period-equals-map)
+  ;; (bind-key "C-. =" #'ctl-period-equals-map)
+  ;; :bind (("C-. = b" . ediff-buffers)
+  ;;       ("C-. = B" . ediff-buffers3)
+  ;;       ("C-. = c" . compare-windows)
+  ;;       ("C-. = =" . ediff-files)
+  ;;       ("C-. = f" . ediff-files)
+  ;;       ("C-. = F" . ediff-files3)
+  ;;       ("C-. = r" . ediff-revision)
+  ;;       ("C-. = p" . ediff-patch-file)
+  ;;       ("C-. = P" . ediff-patch-buffer)
+  ;;       ("C-. = l" . ediff-regions-linewise)
+  ;;       ("C-. = w" . ediff-regions-wordwise))
+  :custom
+  (ediff-diff-options "-w") ;; 忽略空格
+  (ediff-auto-refine "on")
+  (ediff-ignore-similar-regions nil)
+  (ediff-window-setup-function 'ediff-setup-windows-plain)
+  (ediff-split-window-function 'split-window-horizontally) ;; horizontally 才是左右分割。。。
+  (ediff-merge-split-window-function 'split-window-horizontally)
+  )
 
 ;; Automatic parenthesis pairing
 (use-package elec-pair
   :ensure nil
   :hook (after-init . electric-pair-mode)
-  :init (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit))
+  ;; :init (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
+  :config
+  (setq electric-pair-pairs
+        '(
+          (?\' . ?\')
+          (?\" . ?\")
+          (?\( . ?\))
+          (?\[ . ?\])
+          (?\{ . ?\})
+          (?\< . ?\>)
+          (?\` . ?\`)
+          )))
 
 ;; Visual `align-regexp'
 (use-package ialign)
@@ -243,7 +300,13 @@
 
 ;; Increase selected region by semantic units
 (use-package expand-region
-  :bind ("C-=" . er/expand-region)
+  :bind
+  (("C-=" . er/expand-region)
+  ;;  ("C-c m q" . er/mark-inside-quotes)
+  ;;  ("C-c m Q" . er/mark-outside-quotes)
+  ;;  ("C-c m p" . er/mark-inside-pairs)
+  ;;  ("C-c m P" . er/mark-outside-pairs)
+   )
   :config
   (when (centaur-treesit-available-p)
     (defun treesit-mark-bigger-node ()
@@ -265,14 +328,16 @@
 (use-package multiple-cursors
   :bind (("C-c m" . multiple-cursors-hydra/body)
          ("C-S-c C-S-c"   . mc/edit-lines)
-         ("C->"           . mc/mark-next-like-this)
+         ("C->"           . mc/mark-more-like-this-extended)
          ("C-<"           . mc/mark-previous-like-this)
          ("C-c C-<"       . mc/mark-all-like-this)
          ("C-M->"         . mc/skip-to-next-like-this)
          ("C-M-<"         . mc/skip-to-previous-like-this)
-         ("s-<mouse-1>"   . mc/add-cursor-on-click)
+         ("M-<mouse-1>"   . mc/add-cursor-on-click)
          ("C-S-<mouse-1>" . mc/add-cursor-on-click)
          :map mc/keymap
+         ("C-|" . mc/vertical-align-with-space)
+         ("<return>" . nil)
          ("C-|" . mc/vertical-align-with-space))
   :pretty-hydra
   ((:title (pretty-hydra-title "Multiple Cursors" 'mdicon "nf-md-cursor_move")
@@ -297,6 +362,7 @@
 
 ;; Smartly select region, rectangle, multi cursors
 (use-package smart-region
+  :disabled
   :hook (after-init . smart-region-on))
 
 ;; On-the-fly spell checker
@@ -319,7 +385,9 @@
   :hook (after-init . global-hungry-delete-mode)
   :init (setq hungry-delete-chars-to-skip " \t\f\v"
               hungry-delete-except-modes
-              '(help-mode minibuffer-mode minibuffer-inactive-mode calc-mode)))
+              '(help-mode minibuffer-mode minibuffer-inactive-mode calc-mode))
+  :config
+  (setq hungry-delete-join-reluctantly t))
 
 ;; Move to the beginning/end of line or code
 (use-package mwim
@@ -448,6 +516,19 @@
 ;; Hanlde minified code
 (use-package so-long
   :hook (after-init . global-so-long-mode))
+
+;; EvilNerdCommenPac
+(use-package evil-nerd-commenter
+  :bind
+  (("C-c M-;" . c-toggle-comment-style)
+   ("M-;" . evilnc-comment-or-uncomment-lines)
+   ("M-g M-;" . evilnc-comment-or-uncomment-to-the-line)))
+;; -EvilNerdCommenPac
+
+;; dtrt-indent
+(use-package dtrt-indent
+  :diminish
+  :hook (after-init . dtrt-indent-global-mode))
 
 (provide 'init-edit)
 

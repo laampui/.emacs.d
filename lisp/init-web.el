@@ -84,7 +84,7 @@
 
 ;; JavaScript
 (use-package js
-  :init (setq js-indent-level 2))
+  :init (setq js-indent-level 4))
 
 ;; JSON
 (unless (fboundp 'js-json-mode)
@@ -111,9 +111,20 @@
 (use-package web-mode
   :mode "\\.\\(phtml\\|php\\|[gj]sp\\|as[cp]x\\|erb\\|djhtml\\|html?\\|hbs\\|ejs\\|jade\\|swig\\|tm?pl\\|vue\\)$"
   :config
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-css-indent-offset 2)
-  (setq web-mode-code-indent-offset 2))
+  (setq web-mode-script-padding 0)
+  (setq web-mode-style-padding 0)
+  (setq web-mode-markup-indent-offset 4)
+  (setq web-mode-css-indent-offset 4)
+  (setq web-mode-code-indent-offset 4)
+  (setq web-mode-comment-formats '(("java" . "/*")
+                                   ("javascript" . "//")
+                                   ("typescript" . "//")
+                                   ("php" . "/*")
+                                   ("css" . "/*")))
+  (defun web-mode-hook-config ()
+    (local-set-key (kbd "M-;") 'evilnc-comment-or-uncomment-lines))
+  (add-hook 'web-mode-hook 'sgml-electric-tag-pair-mode t)
+  (add-hook 'web-mode-hook 'web-mode-hook-config))
 
 ;; Adds node_modules/.bin directory to `exec_path'
 (use-package add-node-modules-path
@@ -129,6 +140,16 @@
   (use-package restclient-test
     :diminish
     :hook (restclient-mode . restclient-test-mode)))
+
+;; auto rename tag (C-c C-t r in web-mode)
+(use-package auto-rename-tag
+  :disabled
+  :diminish
+  :hook ((sgml-mode web-mode) . auto-rename-tag-mode))
+
+;; emmet
+(use-package emmet-mode
+  :hook ((sgml-mode web-mode) . emmet-mode))
 
 (provide 'init-web)
 

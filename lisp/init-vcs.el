@@ -37,6 +37,8 @@
 ;; See `magit-define-global-key-bindings'
 (use-package magit
   :init (setq magit-diff-refine-hunk t)
+  :custom
+  (magit-diff-hide-trailing-cr-characters nil)
   :config
   (when sys/win32p
     (setenv "GIT_ASKPASS" "git-gui--askpass"))
@@ -175,6 +177,7 @@
     (advice-add #'git-messenger:popup-message :override #'my-git-messenger:popup-message)))
 
 ;; Resolve diff3 conflicts
+;; git config --global merge.conflictStyle zdiff3
 (use-package smerge-mode
   :ensure nil
   :diminish
@@ -224,6 +227,22 @@
 
 ;; Git configuration modes
 (use-package git-modes)
+
+(use-package blamer
+  :disabled
+  :bind (("s-i" . blamer-show-commit-info)
+         ("C-c i" . blamer-show-posframe-commit-info))
+  :defer 20
+  :custom
+  (blamer-idle-time 0.3)
+  (blamer-min-offset 70)
+  :custom-face
+  (blamer-face ((t :foreground "#7a88cf"
+                   :background nil
+                   :height 90
+                   :italic t)))
+  :config
+  (global-blamer-mode 1))
 
 (provide 'init-vcs)
 
