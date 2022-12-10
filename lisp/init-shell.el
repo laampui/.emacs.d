@@ -122,7 +122,7 @@
 
   (defun shell-pop--hide-frame ()
     "Hide child frame and refocus in parent frame."
-    (when (and (childframe-workable-p)
+    (when (and (childframe-completion-workable-p)
                (frame-live-p shell-pop--frame)
                (frame-visible-p shell-pop--frame))
       (make-frame-invisible shell-pop--frame)
@@ -142,7 +142,7 @@
   (bind-keys ([f9]  . shell-pop-toggle)
              ("C-`" . shell-pop-toggle))
 
-  (when (childframe-workable-p)
+  (when (childframe-completion-workable-p)
     (defun shell-pop-posframe-hidehandler (_)
       "Hidehandler used by `shell-pop-posframe-toggle'."
       (not (eq (selected-frame) shell-pop--frame)))

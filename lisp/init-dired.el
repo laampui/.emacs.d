@@ -58,7 +58,7 @@
           (setq ls-lisp-use-insert-directory-program t))
       (progn
         ;; Suppress the warning: `ls does not support --dired'.
-        (setq dired-use-ls-dired nil)
+        ;; (setq dired-use-ls-dired nil)
         (setq dired-listing-switches "-alh"))))
 
   ;; Quick sort dired buffers via hydra

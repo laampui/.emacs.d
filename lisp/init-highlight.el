@@ -40,6 +40,18 @@
          ((dashboard-mode eshell-mode shell-mode term-mode vterm-mode) .
           (lambda () (setq-local global-hl-line-mode nil)))))
 
+(use-package pulsar
+  :config
+  (setq pulsar-pulse t)
+  (setq pulsar-delay 0.055)
+  (setq pulsar-iterations 10)
+  (setq pulsar-face 'pulsar-magenta)
+  (setq pulsar-highlight-face 'pulsar-yellow)
+  (pulsar-global-mode 1)
+  :bind
+  ("C-x l" . pulsar-pulse-line)
+  ("C-x L" . pulsar-highlight-line))
+
 ;; Highlight matching parens
 (use-package paren
   :ensure nil
@@ -105,7 +117,7 @@ FACE defaults to inheriting from default and highlight."
 (use-package symbol-overlay
   :diminish
   :custom-face
-  (symbol-overlay-default-face ((t (:inherit region :background unspecified :foreground unspecified))))
+  (symbol-overlay-default-face ((t (:inherit nil :background "#aee5be" :foreground unspecified))))
   (symbol-overlay-face-1 ((t (:inherit nerd-icons-blue :background unspecified :foreground unspecified :inverse-video t))))
   (symbol-overlay-face-2 ((t (:inherit nerd-icons-pink :background unspecified :foreground unspecified :inverse-video t))))
   (symbol-overlay-face-3 ((t (:inherit nerd-icons-yellow :background unspecified :foreground unspecified :inverse-video t))))
@@ -165,6 +177,17 @@ FACE defaults to inheriting from default and highlight."
 				                       if_statement with_statement while_statement)))
   :hook ((prog-mode yaml-mode) . indent-bars-mode)
   :config (require 'indent-bars-ts))
+
+(use-package hl-indent-scope
+  :disabled
+  :commands (hl-indent-scope-mode)
+  :hook ((prog-mode) . hl-indent-scope-mode)
+  (after-load-theme . hl-indent-scope--auto-color-calc)
+  :straight
+  (hl-indent-scope
+   :type git
+   :host nil
+   :repo "https://codeberg.org/ideasman42/emacs-hl-indent-scope.git"))
 
 ;; Colorize color names in buffers
 (use-package colorful-mode
@@ -226,10 +249,10 @@ FACE defaults to inheriting from default and highlight."
 ;; Highlight uncommitted changes using VC
 (use-package diff-hl
   :custom (diff-hl-draw-borders nil)
-  :custom-face
-  (diff-hl-change ((t (:inherit custom-changed :foreground unspecified :background unspecified))))
-  (diff-hl-insert ((t (:inherit diff-added :background unspecified))))
-  (diff-hl-delete ((t (:inherit diff-removed :background unspecified))))
+  ;; :custom-face
+  ;; (diff-hl-change ((t (:inherit unspecified :foreground "#000000" :background "#fac090"))))
+  ;; (diff-hl-insert ((t (:inherit unspecified :foreground "#000000" :background "#c1f2d1"))))
+  ;; (diff-hl-delete ((t (:inherit unspecified :foreground "#000000" :background "#7f0000"))))
   :bind (:map diff-hl-command-map
          ("SPC" . diff-hl-mark-hunk))
   :hook ((after-init . global-diff-hl-mode)
@@ -311,6 +334,14 @@ FACE defaults to inheriting from default and highlight."
 (use-package goggles
   :diminish
   :hook ((prog-mode text-mode) . goggles-mode))
+
+;; highlight-parentheses
+(use-package highlight-parentheses
+  :custom
+  (highlight-parentheses-background-colors '("#00bfff"))
+  (highlight-parentheses-colors            '("#000000" "#ff6e00" "#01db52" "#ff00ff"))
+  (global-highlight-parentheses-mode 1))
+;; highlight-parentheses
 
 (provide 'init-highlight)
 

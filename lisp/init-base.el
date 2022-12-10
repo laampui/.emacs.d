@@ -40,6 +40,8 @@
 (setq user-full-name centaur-full-name
       user-mail-address centaur-mail-address)
 
+(setq-default truncate-lines t)
+
 (with-no-warnings
   ;; Key Modifiers
   (cond
@@ -51,8 +53,8 @@
     (w32-register-hot-key [s-t]))
    (sys/mac-port-p
     ;; Compatible with Emacs Mac port
-    (setq mac-option-modifier 'meta
-          mac-command-modifier 'super)
+    (setq mac-option-modifier 'super
+          mac-command-modifier 'meta)
     (bind-keys ([(super a)] . mark-whole-buffer)
                ([(super c)] . kill-ring-save)
                ([(super l)] . goto-line)
@@ -63,6 +65,9 @@
                ([(super z)] . undo))))
 
   ;; Optimization
+  (when sys/mac-ns-p
+    (setq mac-option-modifier 'super
+          mac-command-modifier 'meta))
   (when sys/win32p
     (setq w32-get-true-file-attributes nil   ; decrease file IO workload
           w32-use-native-image-API t         ; use native w32 API
@@ -108,7 +113,7 @@
   (set-selection-coding-system 'utf-8))
 
 ;; Environment
-(when (or sys/mac-x-p sys/linux-x-p (daemonp))
+(when (or sys/mac-ns-p sys/linux-x-p (daemonp))
   (use-package exec-path-from-shell
     :custom (exec-path-from-shell-arguments '("-l"))
     :init (exec-path-from-shell-initialize)))
@@ -131,7 +136,7 @@
               '("\\.?cache" ".cask" "url" "COMMIT_EDITMSG\\'" "bookmarks"
                 "\\.\\(?:gz\\|gif\\|svg\\|png\\|jpe?g\\|bmp\\|xpm\\)$"
                 "\\.?ido\\.last$" "\\.revive$" "/G?TAGS$" "/.elfeed/"
-                "^/tmp/" "^/var/folders/.+$" "^/ssh:" "/persp-confs/"
+                "^/tmp/" "^/var/folders/.+$" "^/ssh:" "/persp-confs/" "/var/"
                 (lambda (file) (file-in-directory-p file package-user-dir))))
   :config
   (push (expand-file-name recentf-save-file) recentf-exclude)
@@ -202,11 +207,12 @@
               tab-width 4
               indent-tabs-mode nil)     ; Permanently indent with spaces, never with TABs
 
-(setq visible-bell t
+(setq visible-bell nil
       inhibit-compacting-font-caches t  ; Don’t compact font caches during GC
       delete-by-moving-to-trash t       ; Deleting files go to OS's trash folder
       make-backup-files nil             ; Forbide to make backup files
       auto-save-default nil             ; Disable auto save
+      create-lockfiles nil
 
       uniquify-buffer-name-style 'post-forward-angle-brackets ; Show path if names are same
       adaptive-fill-regexp "[ t]+|[ t]*([0-9]+.|*+)[ t]*"
@@ -278,6 +284,10 @@
 (bind-keys ("s-r"     . revert-this-buffer)
            ("C-x K"   . delete-this-file)
            ("C-c C-l" . reload-init-file))
+
+;; no-littering
+(use-package no-littering
+  :demand t)
 
 (provide 'init-base)
 

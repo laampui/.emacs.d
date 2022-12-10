@@ -35,6 +35,7 @@
 
 (when emacs/>=29p
   (use-package dape
+    :disabled
     :bind (("<f5>" . dape)
            ("M-<f5>" . dape-hydra/body))
     :custom (dape-buffer-window-arrangment 'right)

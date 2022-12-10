@@ -33,6 +33,11 @@
 (eval-when-compile
   (require 'init-custom))
 
+(use-package calendar
+:ensure nil
+:custom
+(calendar-week-start-day 1))
+
 ;; Chinese calendar
 ;; `pC' can show lunar details
 (when centaur-chinese-calendar

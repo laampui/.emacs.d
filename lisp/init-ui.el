@@ -58,8 +58,13 @@
 (setq fancy-splash-image centaur-logo)
 
 ;; Title
-(setq frame-title-format '("Centaur Emacs - %b")
-      icon-title-format frame-title-format)
+(setq icon-title-format '("Centaur Emacs - %b"))
+
+(setq frame-title-format
+      '((:eval (if (buffer-file-name)
+                   (abbreviate-file-name (buffer-file-name))
+                 "%b")) "@" invocation-name "-" emacs-version
+                 ))
 
 (when (or sys/mac-ns-p sys/mac-port-p)
   (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
@@ -85,10 +90,12 @@
     (progn
       ;; Make certain buffers grossly incandescent
       (use-package solaire-mode
+        :disabled
         :hook (after-init . solaire-global-mode))
 
       ;; Excellent themes
       (use-package doom-themes
+        :after modus-theme
         :custom
         (doom-themes-enable-bold t)
         (doom-themes-enable-italic t)
@@ -125,6 +132,10 @@
   :init
   (setq doom-modeline-icon centaur-icon
         doom-modeline-minor-modes t)
+  :custom
+  (doom-modeline-buffer-file-name-style 'file-name)
+  (doom-modeline-vcs-max-length 50)
+  ;; (auto-revert-check-vs-info t)
   :bind (:map doom-modeline-mode-map
          ("C-<f6>" . doom-modeline-hydra/body))
   :pretty-hydra
@@ -264,6 +275,8 @@
 
 (use-package hide-mode-line
   :hook (((treemacs-mode
+           ;; completion-list-mode
+           ;; completion-in-region-mode
            eshell-mode shell-mode
            term-mode vterm-mode eat-mode
            embark-collect-mode
@@ -322,8 +335,14 @@
 
 ;; Display time
 (use-package time
-  :init (setq display-time-default-load-average nil
-              display-time-format "%H:%M"))
+  :ensure nil
+  :init (setq display-time-24hr-format t
+              display-time-day-and-date t
+              display-time-interval 60
+              display-time-default-load-average nil)
+  :config
+  (setq system-time-locale "en_US.UTF-8")
+  (display-time-mode t))
 
 ;; Mouse & Smooth Scroll
 ;; Scroll one line at a time (less "jumpy" than defaults)
@@ -358,6 +377,8 @@
 ;; Display ugly ^L page breaks as tidy horizontal lines
 (use-package page-break-lines
   :diminish
+  :custom
+  (page-break-lines-char ?-)
   :hook (after-init . global-page-break-lines-mode)
   :config (dolist (mode '(dashboard-mode emacs-news-mode))
             (add-to-list 'page-break-lines-modes mode)))
@@ -430,6 +451,131 @@
         (set-char-table-range composition-ligature-table (car char-regexp)
                               `([,(cdr char-regexp) 0 font-shape-gstring]))))
     (set-char-table-parent composition-ligature-table composition-function-table)))
+
+(use-package spacemacs-theme
+  :defer t
+  ;; :init (load-theme 'spacemacs-dark t)
+  )
+
+(use-package modus-themes
+  ;; (info "(modus-themes) Top")
+  :config
+  ;; Add all your customizations prior to loading the themes
+  (setq modus-themes-italic-constructs t)
+  (setq modus-themes-bold-constructs nil)
+  (setq modus-themes-prompts '(italic bold))
+  (setq modus-themes-to-toggle '(modus-operandi modus-vivendi-tinted))
+  (setq modus-themes-common-palette-overrides
+        `(
+          (bg-region bg-yellow-subtle)
+          ;; From the section "Make the mode line borderless"
+          (border-mode-line-active unspecified)
+          (border-mode-line-inactive unspecified)
+
+          ;; From the section "Make matching parenthesis more or less intense"
+          (bg-paren-match bg-magenta-intense)
+          (underline-paren-match fg-main)
+
+          ;; Make the fringe invisible
+          (fringe unspecified)
+
+          ;; Make line numbers less intense
+          (fg-line-number-inactive "gray50")
+          (fg-line-number-active fg-main)
+          (bg-line-number-inactive unspecified)
+          (bg-line-number-active unspecified)
+
+          (fg-completion-match-0 fg-main)
+          (fg-completion-match-1 fg-main)
+          (fg-completion-match-2 fg-main)
+          (fg-completion-match-3 fg-main)
+          (bg-completion-match-0 bg-blue-intense)
+          (bg-completion-match-1 bg-yellow-intense)
+          (bg-completion-match-2 bg-cyan-intense)
+          (bg-completion-match-3 bg-red-intense)
+
+          ;; And expand the preset here.  Note that the ,@ works because
+          ;; we use the backtick for this list, instead of a straight
+          ;; quote.
+          ,@modus-themes-preset-overrides-intense))
+  (setq modus-themes-completions '((matches . ())
+                                   (selection . (semibold))
+                                   ))
+  ;; (load-theme 'modus-operandi :no-confirm)
+  (mapc #'disable-theme custom-enabled-themes)
+  (modus-themes-load-theme 'modus-operandi)
+
+  (defun my-modus-themes-custom-faces ()
+    (modus-themes-with-colors
+      (custom-set-faces
+       `(diff-hl-change ((,c :inherit unspecified :foreground ,bg-main :background "#eb9310")))
+       `(diff-hl-insert ((,c :inherit unspecified :foreground ,bg-main :background "#1fb305")))
+       `(diff-hl-delete ((,c :inherit unspecified :foreground ,bg-main :background "#ff5252")))
+       )))
+
+  (add-hook 'after-load-theme-hook #'my-modus-themes-custom-faces)
+
+  :bind ("<f5>" . modus-themes-toggle))
+
+(use-package ef-themes
+  :config
+  (mapc #'disable-theme custom-enabled-themes))
+
+(use-package keycast
+  :disabled
+  :after doom-modeline
+  :config
+  (setq keycast-mode-line-insert-after '(:eval (doom-modeline-format--main)))
+  (add-to-list 'global-mode-string '("" keycast-mode-line))
+  :hook
+  (doom-modeline-mode . keycast-mode-line-mode))
+
+(use-package circadian
+  :init
+  (setq circadian-themes '(("06:00"  . modus-operandi)
+                           ("18:00" . modus-vivendi)))
+  (circadian-setup))
+
+(use-package dimmer
+  :init
+  (setq dimmer-watch-frame-focus-events nil)
+  (setq dimmer-fraction 0.5)
+  (setq dimmer-adjustment-mode :foreground)
+  (setq dimmer-use-colorspace :rgb)
+  (setq dimmer-buffer-exclusion-regexps '(
+                                          "^ \\*Minibuf-[0-9]+\\*$"
+                                          "^ \\*Echo.*\\*$"
+                                          ;; "\\*Ediff Control Panel\\*$"
+                                          ;; "\\*ediff-merge\\*$"
+                                          ;; "\\UPPER=HEAD\\*$"
+                                          ;; " \\LOWER="
+                                          ;; "\\~$"
+                                          "\\*acm-buffer\\*"
+                                          ))
+  (dimmer-configure-magit)
+  (dimmer-configure-posframe)
+  (dimmer-configure-which-key)
+  (dimmer-configure-hydra)
+  (dimmer-mode 1)
+  :config
+  (defun advise-dimmer-config-change-handler ()
+    "Advise to only force process if no predicate is truthy."
+    (let ((ignore (cl-some (lambda (f) (and (fboundp f) (funcall f)))
+                           dimmer-prevent-dimming-predicates)))
+      (unless ignore
+        (when (fboundp 'dimmer-process-all)
+          (dimmer-process-all t)))))
+
+  (defun corfu-frame-p ()
+    "Check if the buffer is a corfu frame buffer."
+    (or (string-match-p "\\` \\*corfu" (buffer-name))
+        (string-match-p "\\` \\*acm-buffer" (buffer-name))))
+
+  (defun dimmer-configure-corfu ()
+    "Convenience settings for corfu users."
+    (add-to-list 'dimmer-prevent-dimming-predicates #'corfu-frame-p))
+  (advice-add 'dimmer-config-change-handler :override 'advise-dimmer-config-change-handler)
+  (dimmer-configure-corfu))
 
 (provide 'init-ui)
 

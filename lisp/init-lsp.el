@@ -35,6 +35,35 @@
   (require 'init-custom))
 
 (pcase centaur-lsp
+  ('lsp-bridge
+   (use-package lsp-bridge
+     :load-path (lambda () (expand-file-name "straight/repos/lsp-bridge" user-emacs-directory))
+     :custom
+     (acm-enable-doc nil)
+     (lsp-bridge-enable-log nil)
+     (lsp-bridge-python-command "~/.pyenv/shims/python3")
+     ;; (acm-candidate-match-function 'orderless-regexp)
+     ;; (acm-backend-lsp-candidate-min-length 3)
+     (acm-enable-quick-access t)
+     (acm-enable-yas nil)
+     (acm-enable-search-file-words nil)
+     (acm-enable-tabnine nil)
+     (acm-menu-length 10)
+     (lsp-bridge-enable-hover-diagnostic t)
+     (lsp-bridge-signature-show-function nil)
+     ;; (lsp-bridge-signature-show-with-frame-position "point")
+     ;; (acm-quick-access-keys '("q" "w" "e" "r" "t" "y" "u" "i" "o" "0"))
+     :hook
+     (after-init . global-lsp-bridge-mode)
+     :config
+     (setq lsp-bridge-diagnostic-max-number 300)
+     (defun my-modeline (filepath filehost diagnostics)
+       ;; (message (length diagnostics))
+       (setq global-mode-string (number-to-string (length diagnostics)))
+       ;; (add-to-list 'global-mode-string (number-to-string (length diagnostics)))
+       )
+     (advice-add 'lsp-bridge-diagnostic--render :after #'my-modeline)
+     ))
   ('eglot
    (use-package eglot
      :hook ((prog-mode . (lambda ()
@@ -75,6 +104,8 @@
      ;; @see https://emacs-lsp.github.io/lsp-mode/page/performance/
      (setq read-process-output-max (* 1024 1024)) ; 1MB
      (setenv "LSP_USE_PLISTS" "true")
+     :custom
+     (lsp-completion-provider :none) ;; we use Corfu!
      :hook ((prog-mode . (lambda ()
                            (unless (derived-mode-p
                                     'emacs-lisp-mode 'lisp-mode
@@ -115,11 +146,17 @@
                  lsp-enable-indentation nil
                  lsp-enable-on-type-formatting nil
 
+                 lsp-vetur-ignore-project-warning t
+                 lsp-eslint-auto-fix-on-save t
+
                  ;; For diagnostics
                  lsp-diagnostics-disabled-modes '(markdown-mode gfm-mode)
 
                  ;; For clients
                  lsp-clients-python-library-directories '("/usr/local/" "/usr/"))
+     (defun my/lsp-mode-setup-completion ()
+       (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+             '(orderless))) ;; Configure flex
      :config
      (use-package consult-lsp
        :bind (:map lsp-mode-map
@@ -281,7 +318,9 @@
             ("s-<return>" . lsp-ui-sideline-apply-code-actions)
             ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
             ([remap xref-find-references] . lsp-ui-peek-find-references))
-     :hook (lsp-mode . lsp-ui-mode)
+     :hook
+     ;;(lsp-mode . lsp-ui-mode)
+     (lsp-completion-mode . my/lsp-mode-setup-completion)
      :init
      (setq lsp-ui-sideline-show-diagnostics nil
            lsp-ui-sideline-ignore-duplicate t

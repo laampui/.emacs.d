@@ -64,6 +64,57 @@
               '((left-fringe  . 8)
                 (right-fringe . 8))))
 
+
+;; Configure directory extension.
+(use-package vertico-directory
+  :after vertico
+  :ensure nil
+  ;; More convenient directory navigation commands
+  :bind (:map vertico-map
+         ("RET" . vertico-directory-enter)
+         ("DEL" . vertico-directory-delete-char)
+         ("M-DEL" . vertico-directory-delete-word))
+  ;; Tidy shadowed file names
+  :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
+
+;; avy style to select item.
+(use-package vertico-quick
+  :after vertico
+  :ensure nil
+  :bind (:map vertico-map
+         ("M-q" . vertico-quick-insert)
+         ("C-q" . vertico-quick-exit)))
+
+;; multiple UI layout.
+(use-package vertico-multiform
+  :after vertico
+  :ensure nil
+  :custom
+  (vertico-multiform-mode t)
+  :bind (:map vertico-map
+         ("M-G" . vertico-multiform-grid)
+         ("M-F" . vertico-multiform-flat)
+         ("M-R" . vertico-multiform-reverse)
+         ("M-U" . vertico-multiform-unobtrusive))
+  :config
+  ;; (setq vertico-multiform-categories '((file grid))) ;; C-x C-f find file with grid layout
+  ;; (setq vertico-multiform-commands '((execute-extended-command grid)))
+  )
+
+(use-package vertico-grid
+  :disabled
+  :after vertico
+  :ensure nil
+  :hook((vertico-mode . vertico-grid-mode)))
+
+;; vertico reverse
+(use-package vertico-reverse
+  :disabled
+  :after vertico
+  :ensure nil
+  :config
+  (vertico-reverse-mode t))
+
 (use-package nerd-icons-completion
   :when (icons-displayable-p)
   :hook (vertico-mode . nerd-icons-completion-mode))
@@ -107,7 +158,7 @@
          ("M-y"     . consult-yank-pop)                ;; orig. yank-pop
          ;; M-g bindings in `goto-map'
          ("M-g e"   . consult-compile-error)
-         ("M-g f"   . consult-flymake)               ;; Alternative: consult-flycheck
+         ;; ("M-g f"   . consult-flymake)               ;; Alternative: consult-flycheck
          ("M-g g"   . consult-goto-line)             ;; orig. goto-line
          ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
          ("M-g o"   . consult-outline)               ;; Alternative: consult-org-heading
@@ -204,7 +255,7 @@ value of the selected COLOR."
   ;; is 'any, such that any key triggers the preview.
   ;; (setq consult-preview-key 'any)
   ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
-  (setq consult-preview-key nil)
+  (setq consult-preview-key '(:debounce 0 any))
   ;; For some commands and buffer sources it is useful to configure the
   ;; :preview-key on a per-command basis using the `consult-customize' macro.
   (consult-customize
@@ -301,6 +352,7 @@ targets."
 
 ;; Auto completion
 (use-package corfu
+  :disabled
   :custom
   (corfu-auto t)
   (corfu-auto-prefix 2)
