@@ -35,9 +35,9 @@
 
 ;; A multi dictionaries interface
 (use-package fanyi
-  :bind (("C-c d f" . fanyi-dwim)
-         ("C-c d d" . fanyi-dwim2)
-         ("C-c d h" . fanyi-from-history))
+  :bind (("C-c D f" . fanyi-dwim)
+         ("C-c D d" . fanyi-dwim2)
+         ("C-c D h" . fanyi-from-history))
   :custom (fanyi-providers '(fanyi-haici-provider
                              fanyi-youdao-thesaurus-provider
                              fanyi-etymon-provider
@@ -50,16 +50,16 @@
            ("C-c u"   . gt-do-text-utility)
            ("C-c y"   . gt-youdao-dict-translate-dwim)
            ("C-c Y"   . gt-youdao-dict-translate)
-           ("C-c d b" . gt-bing-translate-dwim)
-           ("C-c d B" . gt-bing-translate)
-           ("C-c d g" . gt-do-translate)
-           ("C-c d G" . gt-multi-dict-translate)
-           ("C-c d m" . gt-multi-dict-translate-dwim)
-           ("C-c d M" . gt-multi-dict-translate)
-           ("C-c d y" . gt-youdao-dict-translate-dwim)
-           ("C-c d Y" . gt-youdao-dict-translate)
-           ("C-c d s" . gt-do-setup)
-           ("C-c d u" . gt-do-text-utility))
+           ("C-c D b" . gt-bing-translate-dwim)
+           ("C-c D B" . gt-bing-translate)
+           ("C-c D g" . gt-do-translate)
+           ("C-c D G" . gt-multi-dict-translate)
+           ("C-c D m" . gt-multi-dict-translate-dwim)
+           ("C-c D M" . gt-multi-dict-translate)
+           ("C-c D y" . gt-youdao-dict-translate-dwim)
+           ("C-c D Y" . gt-youdao-dict-translate)
+           ("C-c D s" . gt-do-setup)
+           ("C-c D u" . gt-do-text-utility))
     :init
     (setq gt-langs '(en zh)
           gt-buffer-render-follow-p t
@@ -168,8 +168,8 @@
 ;; OSX dictionary
 (when sys/macp
   (use-package osx-dictionary
-    :bind (("C-c d i" . osx-dictionary-search-input)
-           ("C-c d x" . osx-dictionary-search-pointer))))
+    :bind (("C-c D i" . osx-dictionary-search-input)
+           ("C-c D x" . osx-dictionary-search-pointer))))
 
 (provide 'init-dict)
 

@@ -111,6 +111,7 @@
 
 ;; Persistent the scratch buffer
 (use-package persistent-scratch
+  :disabled
   :diminish
   :bind (:map persistent-scratch-mode-map
          ([remap kill-buffer] . (lambda (&rest _)
@@ -121,8 +122,9 @@
   :hook ((after-init . persistent-scratch-autosave-mode)
          (lisp-interaction-mode . persistent-scratch-mode))
   :init (setq persistent-scratch-backup-file-name-format "%Y-%m-%d"
+              initial-scratch-message ""
               persistent-scratch-backup-directory
-              (expand-file-name "persistent-scratch" user-emacs-directory)))
+              (expand-file-name "var/persistent-scratch" user-emacs-directory)))
 
 ;; Search tools
 ;; Writable `grep' buffer
@@ -147,13 +149,26 @@
 (use-package pomidor
   :bind ("s-<f12>" . pomidor)
   :init
-  (setq alert-default-style 'mode-line)
+  (setq alert-default-style (if sys/macp 'osx-notifier 'notifications))
 
   (when sys/macp
     (setq pomidor-play-sound-file
           (lambda (file)
             (when (executable-find "afplay")
-              (start-process "pomidor-play-sound" nil "afplay" file))))))
+              (start-process "pomidor-play-sound" nil "afplay" file)))))
+
+  (when sys/linuxp
+    (setq pomidor-play-sound-file
+          (lambda (file)
+            (when (executable-find "mplayer")
+              (start-process "pomidor-play-sound" nil "mplayer" file)))))
+
+  :custom
+  (pomidor-sound-tick nil)
+  (pomidor-sound-tack nil)
+  (pomidor-sound-overwork nil)
+  (pomidor-seconds (* 25 60))
+  (pomidor-break-seconds (* 5 60)))
 
 ;; Nice writing
 (use-package olivetti
@@ -258,6 +273,29 @@
   :init (setq ztree-draw-unicode-lines t
               ztree-show-number-of-children t))
 
+;; rime
+(use-package rime
+  :custom
+  (default-input-method "rime")
+  (rime-show-candidate 'posframe)
+  (rime-posframe-style 'vertical)
+  ;;(rime-user-data-dir "~/.local/share/fcitx5/rime")
+  (rime-user-data-dir "~/Library/Rime")
+  (rime-librime-root "~/.emacs.d/librime/dist/")
+  ;; (rime-share-data-dir "~/.emacs.d/librime/rime/")
+  (rime-emacs-module-header-root "~/homebrew/Cellar/emacs-plus@29/29.0.50/include/")
+  :config
+  (setq rime-posframe-properties
+        (list :font "Noto Serif CJK SC Medium"
+              :internal-border-width 8
+              :border-color "#f7f7f7"))
+  (set-face-attribute 'rime-default-face       nil :foreground "#333333" :background "#f7f7f7")
+  (set-face-attribute 'rime-code-face          nil :foreground "#333333")
+  (set-face-attribute 'rime-candidate-num-face nil :foreground "#005096")
+  (set-face-attribute 'rime-comment-face       nil :foreground "#8fbcbb")
+  (set-face-attribute 'rime-highlight-candidate-face nil :foreground "#005096")
+  )
+
 ;; Misc
 (use-package disk-usage)
 (use-package memory-usage)
@@ -276,6 +314,18 @@
                              `(,val face font-lock-string-face)))))
               process-environment))
     (advice-add #'list-environment-entries :override #'my-list-environment-entries)))
+
+(use-package emacs-everywhere)
+
+(use-package minimap
+  :disabled
+  :init
+  (setq minimap-width-fraction 0.10)
+  (setq minimap-minimum-width 10)
+  (setq minimap-window-location 'right)
+  :hook
+  (after-init . minimap-mode))
+
 
 (unless sys/win32p
   (use-package daemons)                 ; system services/daemons

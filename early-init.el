@@ -38,7 +38,8 @@
 ;; packages are compiled ahead-of-time when they are installed and site files
 ;; are compiled when gccemacs is installed.
 (setq native-comp-deferred-compilation nil ;; obsolete since 29.1
-      native-comp-jit-compilation nil)
+      native-comp-jit-compilation nil
+      byte-compile-warnings nil)
 
 ;; Package initialize occurs automatically, before `user-init-file' is
 ;; loaded, but after `early-init-file'. We handle package
@@ -61,6 +62,10 @@
 ;; Inhibit resizing frame
 (setq frame-inhibit-implied-resize t)
 
+;; Set default coding system
+(set-language-environment "UTF-8")
+(setenv "LANG" "zh_CN.UTF-8")
+(set-locale-environment "zh_CN.UTF-8")
 ;; Faster to disable these here (before they've been initialized)
 (push '(menu-bar-lines . 0) default-frame-alist)
 (push '(tool-bar-lines . 0) default-frame-alist)
@@ -68,6 +73,17 @@
 (when (featurep 'ns)
   (push '(ns-transparent-titlebar . t) default-frame-alist))
 (setq-default mode-line-format nil)
+
+;; native-compile
+(when (and (fboundp 'native-comp-available-p)
+           (native-comp-available-p))
+  (progn
+    (setq native-comp-async-report-warnings-errors nil)
+    (setcar native-comp-eln-load-path
+            (expand-file-name (convert-standard-filename "eln-cache/")
+                              user-emacs-directory))
+    (setq package-native-compile t)
+    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; early-init.el ends here
