@@ -544,11 +544,7 @@ This issue has been addressed in 28."
   (pcase theme
     ('auto
      ;; Time-switching themes
-     (use-package circadian
-       :ensure t
-       :commands circadian-setup circadian-activate-latest-theme
-       :custom (circadian-themes centaur-auto-themes)
-       :init (circadian-setup)))
+     nil)
     ('system
      ;; System-appearance themes
      (use-package auto-dark

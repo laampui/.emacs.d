@@ -31,7 +31,7 @@
 /TAGS
 /bookmarks
 /custom-post.el
-/custom.el
+#/custom.el
 /gt-known-words.txt
 /history
 /nov-places
@@ -83,3 +83,8 @@ tutorial/
 url/
 var/
 workspace/
+eaf/
+127.0.0.1:7890
+straight/build/
+straight/repos/
+straight/build-cache.el
